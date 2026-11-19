@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linear regression · R source</title>
+<style>
+:root { color-scheme: light dark; }
+body { max-width: 58rem; margin: 2rem auto; padding-inline: 1rem; font: 1.125rem/1.5 "Times New Roman", Times, serif; }
+a { color: inherit; text-underline-offset: .2em; }
+pre { border: 1px solid GrayText; padding: 1rem; overflow-x: auto; font-size: .9rem; }
+</style>
+</head>
+<body>
+<nav aria-label="Document navigation"><a href="../projects/">Projects</a></nav>
+<main>
+<h1>Linear regression · R source</h1>
+<p><a href="research-Kerry.R" download>Download research-Kerry.R</a></p>
+<pre tabindex="0" aria-label="Source code"><code>#Salary vs. Years of Experiences (linear)
+data &lt;- Salary_Age_Experience
+
+model1 &lt;- lm(Salary ~ YearsExperience, data = data)
+
+plot(data$YearsExperience, data$Salary,
+     main = &quot;Salary vs. Years of Experience&quot;,
+     xlab = &quot;Years of Experience&quot;, ylab = &quot;Salary&quot;,
+     pch = 16, col = &quot;steelblue&quot;, cex = 1.2)
+
+abline(model1, col = &quot;tomato&quot;, lwd = 2)
+
+A &lt;- cbind(1, data$YearsExperience)
+b &lt;- data$Salary
+print(A)
+print(b)
+
+#Salary vs. Age (Quadratic)
+data$Age2 &lt;- data$Age^2
+model2 &lt;- lm(Salary ~ Age + Age2, data = data)
+
+x_seq &lt;- seq(min(data$Age), max(data$Age), length.out = 200)
+y_pred &lt;- predict(model2, newdata = data.frame(
+  Age = x_seq, Age2 = x_seq^2))
+
+plot(data$Age, data$Salary,
+     main = &quot;Salary vs. Age (Quadratic)&quot;,
+     xlab = &quot;Age&quot;, ylab = &quot;Salary&quot;,
+     pch = 16, col = &quot;steelblue&quot;, cex = 1.2)
+
+lines(x_seq, y_pred, col = &quot;tomato&quot;, lwd = 2)
+
+#Salary vs. Age &amp; Years of Experiences
+library(scatterplot3d)
+
+working &lt;- data[!is.na(data$YearsExperience), ]
+
+working$Age2 &lt;- working$Age^2
+model3 &lt;- lm(Salary ~ YearsExperience + Age + Age2, data = working)
+
+s3d &lt;- scatterplot3d(working$YearsExperience, working$Age, working$Salary,
+      main = &quot;Salary vs. Age &amp; Years of Experience (3D)&quot;,
+      xlab = &quot;Years of Experience&quot;,
+      ylab = &quot;Age&quot;,
+      zlab = &quot;Salary&quot;,
+      pch = 16, color = &quot;steelblue&quot;, angle = 45)
+
+x_seq &lt;- seq(min(working$YearsExperience), max(working$YearsExperience), length.out = 20)
+a_seq &lt;- seq(min(working$Age), max(working$Age), length.out = 20)
+grid &lt;- expand.grid(YearsExperience = x_seq, Age = a_seq)
+grid$Age2 &lt;- grid$Age^2
+grid$Salary &lt;- predict(model3, newdata = grid)
+
+s3d$points3d(grid$YearsExperience, grid$Age, grid$Salary,
+             col = rgb(1, 0.3, 0.3, 0.4), pch = 46, cex = 3)
+</code></pre>
+</main>
+</body>
+</html>

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STA130 CATF · Quarto source</title>
+<style>
+:root { color-scheme: light dark; }
+body { max-width: 58rem; margin: 2rem auto; padding-inline: 1rem; font: 1.125rem/1.5 "Times New Roman", Times, serif; }
+a { color: inherit; text-underline-offset: .2em; }
+pre { border: 1px solid GrayText; padding: 1rem; overflow-x: auto; font-size: .9rem; }
+</style>
+</head>
+<body>
+<nav aria-label="Document navigation"><a href="../projects/">Projects</a></nav>
+<main>
+<h1>STA130 CATF · Quarto source</h1>
+<p><a href="sta130-catf.qmd" download>Download sta130-catf.qmd</a></p>
+<pre tabindex="0" aria-label="Source code"><code>---
+title: &quot;STA130 Final Project: Renewable Energy Development in African Countries&quot;
+subtitle: &quot;Exploring the relationships between GDP, human development, electricity access, and renewable capacity&quot;
+author: &quot;Ruihe(Kerry) Yang, Lena Wang, Chloe Jung, Cobe Chi | Group TUT0113-C&quot;
+date: today
+format: 
+  beamer:
+    theme: Madrid
+    colortheme: default
+    fonttheme: serif
+    aspectratio: 169
+    slide-level: 2
+    toc: false
+    incremental: false
+    pdf-engine: pdflatex
+    keep-tex: false
+editor: visual
+---
+
+```{r setup, include=FALSE}
+library(gridExtra)
+library(tidyverse)
+library(knitr)
+library(cowplot)
+knitr::opts_chunk$set(
+echo = FALSE,
+include = TRUE,
+warning = FALSE,
+message = FALSE,
+results = &quot;markup&quot;,
+fig.width = 6,
+fig.height = 3.5,
+fig.align = &quot;center&quot;,
+out.width = &quot;80%&quot;
+)
+```
+
+```{r load-data, echo=FALSE}
+### Read in data
+CATF_data &lt;- read_csv(&quot;CATF_data.csv&quot;)
+```
+
+```{r clean_data, include=FALSE}
+
+## Clean the data 
+
+## E.g., remove unrealistic populations
+#CATF_data |&gt; arrange(population) |&gt; View()
+
+#CATF_data &lt;- CATF_data |&gt; filter(population &gt; 100)
+## Alternatively, we could convert them to the correct values for each country by 
+## seeing roughly what the population values for each country are and scaling up accordingly.
+
+
+# ============================================================
+# Aggregate CATF_data: one row per country
+# ============================================================
+# Each country has multiple rows (one per student). We collapse
+# them into a single row using sensible summary functions.
+#
+# General strategy:
+#   - numeric columns  → median  (robust to outliers / typos)
+#   - character columns → mode   (most common value reported)
+#
+# Feel free to swap median() for mean() or mode() on any
+# variable if you think a different choice is more appropriate.
+# ============================================================
+
+
+# --- helper function: statistical mode (most frequent value) ----
+# works for both character and numeric vectors
+stat_mode &lt;- function(x) {
+  x &lt;- x[!is.na(x)]
+  if (length(x) == 0) return(NA)
+  ux &lt;- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+# --- identify column types --------------------------------------
+numeric_cols &lt;- CATF_data |&gt;
+  select(where(is.numeric)) |&gt;
+  names()
+
+character_cols &lt;- CATF_data |&gt;
+  select(where(is.character), -country) |&gt;
+  names()
+
+# --- aggregate -----------------------------------------------
+CATF_clean &lt;- CATF_data |&gt;
+  group_by(country) |&gt;
+  summarise(
+    # For every numeric column, take the median (ignoring NAs)
+    across(all_of(numeric_cols), function(x){ median(x, na.rm = TRUE) }),
+
+    # For every character column, take the mode
+    across(all_of(character_cols), stat_mode),
+
+    # (optional) track how many student rows were combined
+    n_sources = n()
+  )
+
+# --- quick check ---------------------------------------------
+#glimpse(CATF_clean)
+
+# How many unique countries do we have?
+#nrow(CATF_clean)
+
+# ============================================================
+# CUSTOMISATION IDEAS
+# ============================================================
+# If you&#x27;d prefer to use the mean for some variables and the
+# median for others, you can split them up like this:
+#
+# CATF_clean &lt;- CATF_data |&gt;
+#   group_by(country) |&gt;
+#   summarise(
+#     # Variables where mean makes sense
+#     across(c(gdp, population),
+#            function(x){ mean(x, na.rm = TRUE) } ),
+#
+#     # Variables where median is more robust
+#     across(c(poverty_rate, hdi, median_age),
+#            function(x){ median(x, na.rm = TRUE) } ),
+#
+#     # Variables where mode makes sense (e.g. categorical-ish)
+#     across(c(renewable_target_solar, renewable_target_wind),
+#            stat_mode),
+#
+#     n_sources = n()
+#   )
+# ============================================================
+
+
+```
+
+## Introduction
+
+**Background**: Africa countries still face challenges in providing affordable, reliable, and accessible electricity. Policymakers often lack clear indicators to track progress, which is why the Clean Air Task Force (CATF) is developing an Electricity Sector Performance Scorecard (ESPS).
+
+**Overall Theme:** This project explores how factors such as economic development, human development, electricity access, and policy targets are related to renewable energy adoption across African countries.
+
+**Research Goal:** To examine whether economic development indicators such as GDP, HDI, electricity access levels, and policy targets are associated with higher renewable energy adoption across African countries.
+
+**Target Population:**  African countries included in the CATF dataset.
+
+**Audience:** Staff at the Clean Air Task Force (CATF), as well as policymakers, researchers, and development organizations working on electricity sector development in Africa.
+
+## Data Summary
+
+**Key Variables:**
+
+-   **GDP**: Gross domestic product of a country.
+
+-   **Renewables Share in Generation Mix**: Share of electricity generation from renewable sources (%).
+
+-   **Human Development Index**: Human Development Index of each country.
+
+-   **Electrification Rate**: percentage of the population in a country that has access to electricity.
+
+-   **Total installed variable renewables capacity:** total installed capacity of variable renewable energy sources in a country.
+
+-   **Renewables target for Wind**: National target for wind power capacity.
+
+-   **Renewable target for solar:** National target for solar power capacity.
+
+-   **Total installed variable renewables capacity:** Total installed capacity of variable renewable energy (wind and solar).
+
+## **Data Wrangling:**
+
+-   **GDP groups**: A categorical variable based on GDP per capita. Countries are grouped into four levels (Low, Lower Middle, Upper Middle, High GDP) to compare renewable energy shares across economic levels.
+
+-   **HDI groups**: A categorical variable based on HDI. Countries are divided into High HDI and Low HDI using the median HDI to compare renewable energy shares across development levels.
+
+-   **Access levels**: A categorical variable based on electrification_rate. Countries are classified into Low (\&lt;50), Medium (50-80), and High (\&gt;80) access groups to examine differences in renewable energy capacity.
+
+-   **Target state:** A binary variable created to indicate whether a country has a renewable energy target for a specific technology. It is defined as TRUE if the target value is greater than 0 and FALSE otherwise.
+
+-   **Target type**: A categorical variable created to identify the type of renewable energy target being analyzed.
+
+The four categories are wind, solar, storage, and embedded generation.
+
+## Question #1: \[Lena - GDP and Renewable Energy\]
+
+**Research Question:** How does GDP per capita relate to the share of renewable energy in electricity generation across African countries?
+
+**Why this matters:**
+
+-   Helps understand whether a nation&#x27;s GDP level affects how much renewable energy it uses
+
+-   Identifies whether high GDP nations more dependent on renewable energy to generate electricity
+
+-   Africa&#x27;s future energy policy and sustainable development plans can use this as a guide.
+
+## Q1: Variables &amp; Approach
+
+**Variables used:**
+
+-   **GDP**: GDP per capita (USD)
+
+-   **Renewables Share Gen Mix Percent**: Share of renewable energy in electricity generation (%)
+
+**New variables/groups defined:**
+
+-   **gdp group**: Countries categorized into two groups based on GDP per capita
+    -   Lower GDP
+
+    -   Higher GDP
+
+**Approach:**
+
+A **boxplot** is used to compare renewable energy shares between two GDP groups.
+
+-   **X-axis**: GDP group (Lower GDP vs Higher GDP)
+
+-   **Y-axis**: Share of renewable energy in electricity generation(%)
+
+-   **Each observation**: One African country
+
+The boxplot allows us to compare the distribution and median renewable energy share across different levels of GDP.
+
+## Q1: Visualization
+
+```{r q1-plot}
+library(tidyverse)
+
+CATF_data_clean &lt;- CATF_data |&gt;
+  filter(
+    renewables_share_gen_mix_percent &gt;= 0,
+    renewables_share_gen_mix_percent &lt;= 100,
+    gdp &lt; 20000
+  ) |&gt;
+  mutate(
+    gdp_group = ifelse(
+      gdp &lt;= median(gdp, na.rm = TRUE),
+      &quot;Lower GDP&quot;,
+      &quot;Higher GDP&quot;
+    )
+  )
+
+CATF_data_clean |&gt;
+  ggplot(aes(x = gdp_group, y = renewables_share_gen_mix_percent)) +
+  geom_boxplot(fill = &quot;pink&quot;, alpha = 0.7) +
+  stat_summary(
+    fun = median,
+    geom = &quot;text&quot;,
+    aes(label = round(after_stat(y), 1)),
+    vjust = -0.5,
+    color = &quot;black&quot;
+  ) +
+  stat_summary(
+    fun.data = function(y) {
+      data.frame(
+        y = quantile(y, probs = c(0.25, 0.75), na.rm = TRUE),
+        label = round(quantile(y, probs = c(0.25, 0.75), na.rm = TRUE), 1)
+      )
+    },
+    geom = &quot;text&quot;,
+    vjust = -0.5,
+    color = &quot;black&quot;
+  ) +
+  labs(
+    title = &quot;Renewable Energy Share by GDP Group&quot;,
+    x = &quot;GDP Group&quot;,
+    y = &quot;Renewable Share of Electricity Generation (%)&quot;
+  ) +
+  theme_minimal()
+
+
+
+```
+
+**Insights for boxplot**: From the boxplot, a higher median (32 percent vs 21 percent) and wider IQR in lower GDP countries indicate greater reliance on and variability in renewable energy.
+
+## Q1: Summary Table
+
+```{r q1-table}
+CATF_data_clean |&gt;
+  group_by(gdp_group) |&gt;
+  summarise(
+    Number = n(),
+    `Mean Share` = round(mean(renewables_share_gen_mix_percent, na.rm = TRUE), 1),
+    `Median Share` = round(median(renewables_share_gen_mix_percent, na.rm = TRUE), 1),
+    `Min Share` = round(min(renewables_share_gen_mix_percent, na.rm = TRUE), 1),
+    `Max Share` = round(max(renewables_share_gen_mix_percent, na.rm = TRUE), 1),
+    .groups = &quot;drop&quot;
+  ) |&gt;
+  rename(`GDP Group` = gdp_group) |&gt;
+  knitr::kable(
+    caption = &quot;Renewable Share of Electricity Generation (%) by GDP Group&quot;,
+    booktabs = TRUE
+  )
+```
+
+-   **Insight:** from the table, Higher mean and median values (41.5 percent vs 29.6 percent, 32 percent vs 21percent) suggest lower GDP countries have higher renewable shares.
+
+## Question #2: \[Cobe - HDI and Renewable Energy Share\]
+
+**Research Question:**
+
+Is there a relationship between a country’s Human Development Index (HDI) and the share of renewable energy in electricity generation?
+
+**Why does this matter?**
+
+-   Helps understand whether more developed countries adopt renewable energy at higher rates.
+
+-   Provides insight into how development level may influence energy transition.
+
+-   Can highlight whether economic development is associated with renewable energy infrastructure.
+
+## Q2: Variables &amp; Approach
+
+**Variables used:**
+
+-   **Human Development Index:** Human Development Index of each country.
+
+-   **Renewables Share in Generation Mix:** Percentage of electricity generation from renewable energy sources.
+
+-   **Electrification Rate:** percentage of population with access to electricity
+
+**New variables or groups defined:**
+
+-   **Human Development Index group:** Countries grouped based on the median HDI (0.555)\
+    High HDI = HDI \&gt; median\
+    Low HDI = HDI \&lt;= median
+
+-   **Electricity Access group:** Countries grouped based on the median electrification rate. (56.7)
+
+    High Access = Electrification rate \&gt; median\
+    Low Access = Electrification rate \&lt;= median
+
+## Q2: Visualization
+
+```{r q2-plot}
+library(tidyverse)
+
+CATF_data &lt;- CATF_data |&gt;
+  mutate(
+    hdi_group = ifelse(
+      hdi &gt; median(hdi, na.rm = TRUE),
+      &quot;High HDI&quot;,
+      &quot;Low HDI&quot;
+    ),
+    electricity_group = ifelse(
+      electrification_rate &gt; median(electrification_rate, na.rm = TRUE),
+      &quot;High Access&quot;,
+      &quot;Low Access&quot;
+    )
+  )
+
+CATF_data &lt;- CATF_data |&gt;
+  filter(
+    !is.na(hdi_group),
+    !is.na(electricity_group),
+    !is.na(renewables_share_gen_mix_percent)
+  )
+ggplot(
+  CATF_data,
+  aes(
+    x = hdi_group,
+    y = renewables_share_gen_mix_percent,
+    fill = electricity_group
+  )
+) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,100)) +
+  labs(
+    title = &quot;Renewable Energy Share by HDI Group and Electricity Access&quot;,
+    x = &quot;HDI Group&quot;,
+    y = &quot;Renewable Energy Share (%)&quot;,
+    fill = &quot;Electricity Access&quot;
+  )
+
+```
+
+## Q2: Summery Table
+
+```{r q2-table}
+CATF_data |&gt;
+  group_by(hdi_group, electricity_group) |&gt;
+  summarise(
+    Number = n(),
+    `Mean Renewable` = mean(renewables_share_gen_mix_percent, na.rm = TRUE),
+    `Median Renewable` = median(renewables_share_gen_mix_percent, na.rm = TRUE)
+  ) |&gt;
+  rename(
+    `HDI Group` = hdi_group,
+    `Electricity Group` = electricity_group
+  ) |&gt;
+  knitr::kable(
+    caption = &quot;Renewable Energy Share by HDI Group and Electricity Access&quot;
+  )
+```
+
+-   **Insights for Q2:** Countries with higher HDI tend to have more renewable energy access. This is supported by the boxplot because a higher median renewable share in the higher HDI group compared to the high HDI group.
+
+## Question #3: \[Ruihe(Kerry) Yang - The relationship between electricity access levels and installed renewable capacity\]
+
+**Research Question:**\
+This analysis investigates whether countries with higher electricity access levels tend to have greater installed renewable energy capacity.
+
+**Why this matters:**
+
+-   Helps understand how energy access and clean energy growth can work together.
+
+-   Offers insights into whether governments should prioritize electrification or renewable energy investment.
+
+## Q3: Variables &amp; Approach
+
+**Variables used:**
+
+-   **Electrification Rate**: percentage of the population in a country that has access to electricity.
+-   **Total installed variable renewables capacity:** total installed capacity of variable renewable energy sources such as wind and solar in a country.
+
+**New variables/groups defined:**
+
+-   **Access level:** A categorical variable created from the electrification rate groups countries into three electricity access categories, each representing the level of access to electricity in certain African countries. The three groups are:\
+
+    Low access countries (\&lt;50),
+
+    Medium access countries (50-80)
+
+    High access countries (\&gt;80)
+
+## Q3: Visualization
+
+```{r q3-plot}
+CATF_clean |&gt;
+mutate(
+access_level = case_when(
+electrification_rate &lt; 50 ~ &quot;Low access countries&quot;,
+electrification_rate &lt; 80 ~ &quot;Medium access countries&quot;,
+electrification_rate &gt; 80 ~ &quot;High access countries&quot;),
+access_level = factor(access_level, levels = c(
+      &quot;High access countries&quot;,
+      &quot;Medium access countries&quot;,
+      &quot;Low access countries&quot;))) |&gt;
+
+
+ggplot(aes(x = access_level,
+           y = total_installed_variable_renewables_capacity)) +
+geom_boxplot(fill = &quot;pink&quot;) +
+labs(
+x = &quot;Electricity Access Level Across Countries&quot;,
+y = &quot;Installed Renewable Capacity&quot;,
+title = &quot;Renewable Capacity by Electricity Access Level Across Countries&quot;
+)
+```
+
+## Q3: Summary Table
+
+```{r q3-table}
+CATF_clean |&gt;
+mutate(
+  access_level = case_when(
+    electrification_rate &lt; 50 ~ &quot;Low access countries&quot;,
+    electrification_rate &lt; 80 ~ &quot;Medium access countries&quot;,
+    TRUE ~ &quot;High access countries&quot;
+  ),
+  `access_level` = factor(
+    access_level,
+    levels = c(
+      &quot;High access countries&quot;,
+      &quot;Medium access countries&quot;,
+      &quot;Low access countries&quot;
+    )
+  )
+) |&gt;
+group_by(access_level) |&gt;
+summarise(
+  `Number of Countries` = n(),
+  `Average Capacity` = round(mean(total_installed_variable_renewables_capacity), 1),
+  `Median Capacity` = round(median(total_installed_variable_renewables_capacity), 1)
+) |&gt;
+rename(`Access Level` = access_level) |&gt;
+kable(caption = &quot;Renewable Capacity by Electricity Access Level Across Countries&quot;)
+```
+
+-   **Insights for Q3:**
+
+    The median renewable capacity for high access countries is slightly higher (around 242), and the distribution is much wider. In contrast, the median values for medium and low access countries are relatively similar, both falling roughly between 30 and 100. This suggests that countries with higher electricity access tend to have greater installed renewable energy capacity overall.
+
+## Question #4: \[Chloe - Renewable energy policy targets and installed renewable capacity\]
+
+**Research Question:**
+
+How does having renewable energy targets for wind, solar, storage, or embedded generation relate to the total installed variable renewable energy capacity across African countries?
+
+**Why this matters:**
+
+-   Helps understand whether policy targets are associated with higher renewable energy development.
+
+-   Shows which types of renewable targets may be linked to greater installed renewable capacity.
+
+-   Provides insight into how policy goals may relate to renewable energy expansion in Africa.
+
+## Q4: Variables &amp; Approach
+
+**Renewable Energy Targets:**
+
+-   **Wind Target**: Percentage of electricity generation targeted from wind energy
+
+-   **Solar Target**: Percentage of electricity generation targeted from solar energy
+
+-   **Storage Target**: Percentage of electricity generation supported by energy storage
+
+-   **Embedded Generation Target**: Percentage of electricity generation from distributed renewable sources
+
+**Outcome Variable:**
+
+-   **Installed Renewable Capacity**: Total installed capacity of variable renewable energy (MW)
+
+## **New variables/groups defined:**
+
+-   **Presence of Target**: Indicates whether a country has a renewable energy target for a given technology (TRUE = the country has a renewable energy target, FALSE = the country does not have a renewable energy target)
+
+-   **Type of Target**: Categorizes the type of renewable energy target (Wind, Solar, Storage, Embedded Generation), allowing comparison across technologies.
+
+## Q4: Visualization
+
+```{r q4-plot}
+ggplot(
+rbind(
+CATF_clean |&gt;
+mutate(has_target = renewable_target_wind &gt; 0,
+       target_type = &quot;Wind Target&quot;) |&gt;
+group_by(has_target, target_type) |&gt;
+summarise(avg_capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE)),
+
+CATF_clean |&gt;
+mutate(has_target = renewable_target_solar &gt; 0,
+       target_type = &quot;Solar Target&quot;) |&gt;
+group_by(has_target, target_type) |&gt;
+summarise(avg_capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE)),
+
+CATF_clean |&gt;
+mutate(has_target = renewable_target_storage &gt; 0,
+       target_type = &quot;Storage Target&quot;) |&gt;
+group_by(has_target, target_type) |&gt;
+summarise(avg_capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE)),
+
+CATF_clean |&gt;
+mutate(has_target = renewable_target_embedded_gen &gt; 0,
+       target_type = &quot;Embedded Generation Target&quot;) |&gt;
+group_by(has_target, target_type) |&gt;
+summarise(avg_capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE))
+),
+aes(x = has_target, y = avg_capacity)
+) +
+geom_col(fill = &quot;pink&quot;, color = &quot;black&quot;) +
+facet_wrap(~target_type) +
+labs(
+title = &quot;Installed Renewable Capacity by Renewable Energy Targets&quot;,
+x = &quot;Presence of Target&quot;,
+y = &quot;Average Installed Renewable Capacity (MW)&quot;
+)
+```
+
+## Q4: Summary Table
+
+```{r q4-table}
+summary_table &lt;- rbind(CATF_clean |&gt;
+mutate(target_type = &quot;Wind Target&quot;,
+       has_target = renewable_target_wind &gt; 0) |&gt;
+group_by(target_type, has_target) |&gt;
+summarise(
+Avg_Capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE),
+Countries = n()),
+
+CATF_clean |&gt;
+mutate(target_type = &quot;Solar Target&quot;,
+       has_target = renewable_target_solar &gt; 0) |&gt;
+group_by(target_type, has_target) |&gt;
+summarise(
+Avg_Capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE),
+Countries = n()),
+
+CATF_clean |&gt;
+mutate(target_type = &quot;Storage Target&quot;,
+       has_target = renewable_target_storage &gt; 0) |&gt;
+group_by(target_type, has_target) |&gt;
+summarise(Avg_Capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE),
+Countries = n()),
+
+CATF_clean |&gt;
+mutate(target_type = &quot;Embedded Generation Target&quot;,
+       has_target = renewable_target_embedded_gen &gt; 0) |&gt;
+group_by(target_type, has_target) |&gt;
+summarise(
+Avg_Capacity = mean(total_installed_variable_renewables_capacity, na.rm = TRUE),
+Countries = n()))
+
+colnames(summary_table) &lt;- c(
+  &quot;Target Type&quot;,
+  &quot;Presence of Target&quot;,
+  &quot;Avg Capacity&quot;,
+  &quot;Countries&quot;
+)
+
+
+
+knitr::kable(
+  summary_table,
+  caption = &quot;Average Installed Renewable Capacity by Renewable Policy Targets&quot;,
+  booktabs = TRUE)
+
+```
+
+-   **Insights:** Installed capacity is much higher when renewable energy targets are present (e.g., wind: \~100 vs \~580 MW), with similar gaps across target types.
+
+## Overall Limitations
+
+**Data Limitations:**
+
+-   The dataset does not capture all factors that may influence renewable energy outcomes, such as policy implementation, investment levels, and infrastructure differences across countries.
+-   Our analysis focuses on cross sectional data, meaning we observe relationships at one point in time rather than long term trends.
+
+**Future Directions:**
+
+-   Future research could include more countries and additional years of data to better understand long-term renewable energy transition patterns.
+-   Researchers could also incorporate variables related to government policies, investment levels, and technological development to better explain renewable energy adoption.
+-   More advanced statistical models could be used to explore potential causal relationships between economic development and renewable energy adoption.
+
+## Overall Conclusion
+
+**Key Findings:**
+
+-   Countries with lower GDP per capita often have higher renewable electricity shares, showing that wealth alone does not determine renewable energy use.
+
+-   Countries with higher HDI tend to have higher renewable energy shares.
+
+-   Countries with higher electricity access tend to have greater installed renewable energy capacity.
+
+-   Countries with renewable energy targets tend to have higher installed renewable capacity than those without targets.
+
+-   Wind targets show the largest increase in capacity.
+
+**Connection to Theme:**
+
+Overall, the results suggest that renewable energy development in Africa is shaped by a combination of economic conditions, electricity infrastructure, and policy targets rather than a single factor.
+
+## References &amp; Acknowledgements
+
+**References:**
+
+-   Clean Air Task Force (CATF). *African Electricity Sector Performance Data*.
+
+-   R Core Team. *R: A language and environment for statistical computing*.
+
+**Acknowledgements:**
+
+-   We thank the Clean Air Task Force (CATF) for providing the dataset used in this project.\
+    We also acknowledge the instructors and teaching assistants of STA130 at the University of Toronto for their guidance and support.
+</code></pre>
+</main>
+</body>
+</html>

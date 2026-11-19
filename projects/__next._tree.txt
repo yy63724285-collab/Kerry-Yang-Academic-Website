@@ -1,0 +1,2 @@
+:HL["/_next/static/css/2c9585268f3cf699.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"section","param":{"type":"d","key":"projects","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"in5A7Qha6JXUm0E0IgNa0"}
