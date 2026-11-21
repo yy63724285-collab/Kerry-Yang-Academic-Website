@@ -1,2 +1,2 @@
-:HL["/Kerry-Yang-Academic-Website/_next/static/css/8cbb35c4cf636730.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"wsNn3FDUavjrF1WqZFhVE"}
+:HL["/Kerry-Yang-Academic-Website/_next/static/css/7b5e47a5412b108c.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"qZtbEmblCf0Azz-bZ2hTl"}
