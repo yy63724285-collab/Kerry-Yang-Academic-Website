@@ -21,3 +21,9 @@ No build is required. GitHub Pages publishes the repository root from `main`; `.
 Serve this folder with `python3 -m http.server 8767`. Relative URLs work under the repository's GitHub Pages subpath.
 
 Replaces the earlier academic-site build. The earlier version remains recoverable through Git history.
+
+## Languages
+
+The top navigation includes English (default), Simplified Chinese, French, Spanish, Korean, Traditional Chinese, Cantonese and Japanese. The selected language is stored locally on the visitor's device. Navigation, content, buttons and dynamic accessibility labels are localized. CV and project downloads retain their original files.
+
+Edit `locales-data.json` and `scripts/locales-runtime.js`, then run `python3 scripts/build-locales.py`. This verifies every language has all 102 content keys and rebuilds `locales.js`. The browser uses the local bundle without an external translation service.

@@ -33,11 +33,12 @@
       tab.tabIndex = 0;
     });
     root.dataset.page = name;
-    document.title = `${name[0].toUpperCase()+name.slice(1)} | Kerry Yang`;
+    document.title = window.portfolioI18n?.sectionTitle(name) ?? `${name[0].toUpperCase()+name.slice(1)} | Kerry Yang`;
     const index = panels.findIndex(p => p.id === `panel-${name}`);
     const next = panels[index + 1];
     nextSection.hidden = !next;
     if (next) {const label = `Continue to ${next.id.replace('panel-','')}`;nextSection.setAttribute('aria-label',label);nextSection.title=label;}
+    window.portfolioI18n?.updateDynamicLabels();
   }
   let scrollTween = 0;
   function cancelScroll() {
@@ -118,13 +119,14 @@
     const selected=projects.find(p=>p.id===`project-${key}`);
     if(animate&&!reduced.matches&&selected){selected.getAnimations().forEach(a=>a.cancel());selected.animate([{opacity:0,transform:'translateY(14px)',filter:'blur(3px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}],{duration:480,easing:'cubic-bezier(.22,1,.36,1)'});}
     document.querySelector('#filter-announcement').textContent = projectTabs.find(t => t.dataset.project === key)?.textContent + ' project selected';
+    window.portfolioI18n?.updateDynamicLabels();
   }
   projectTabs.forEach(tab => tab.addEventListener('click', () => showProject(tab.dataset.project)));
   keyboardTabs(projectTabs, tab => showProject(tab.dataset.project));
   showProject('housing',false);
   function updateThemeLabel() { theme.setAttribute('aria-label', root.dataset.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'); }
   updateThemeLabel();
-  theme.addEventListener('click', () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('kerry-editorial-paper-theme', root.dataset.theme); } catch {} updateThemeLabel(); });
+  theme.addEventListener('click', () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('kerry-editorial-paper-theme', root.dataset.theme); } catch {} updateThemeLabel(); window.portfolioI18n?.updateDynamicLabels(); });
 
   // A two-second introduction, independent of navigation or any network request.
   const percent = loader.querySelector('.loader-percent');
@@ -137,6 +139,7 @@
     main.inert = false; header.inert = false; document.querySelector('footer').inert = false;
     loader.setAttribute('aria-label', 'Portfolio ready');
     root.classList.remove('booting'); root.classList.add('site-entered', 'intro-animating');
+    window.portfolioI18n?.updateDynamicLabels();
     setTimeout(() => root.classList.remove('intro-animating'), 1700);
     setTimeout(() => { loader.hidden = true; }, reduced.matches ? 0 : 500);
   }
