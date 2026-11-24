@@ -1,12 +1,23 @@
-# Ruihe (Kerry) Yang · Academic Website
+# Kerry Yang — Academic Portfolio
 
-I’m Ruihe (Kerry) Yang, a Statistics Specialist and Mathematics Major at the University of Toronto. I created this website to share my academic background, research seminar work, and applied statistics projects.
+Live website: https://yy63724285-collab.github.io/Kerry-Yang-Academic-Website/
 
-**[Visit my academic website](https://yy63724285-collab.github.io/)**
+A static portfolio with About, Education, Projects, Experience, Notes and Contact. Includes the latest CV, project reports and source links, Outlook compose, direct email, LinkedIn and GitHub.
 
-## Selected work
+## Editing
 
-- **Linear Algebra Foundations of Linear Regression.** In a University of Toronto summer research seminar, I derived the least-squares solution using orthogonal projection and the normal equations, then used R to fit and visualize regression models. [View my R code](https://yy63724285-collab.github.io/project-files/research-Kerry.R.html)
-- **Electricity Access and Renewable Energy in Africa.** For a team project in STA130, I helped analyze electricity access and renewable energy capacity across African countries and integrated the team’s analyses into a Quarto report. [View the project PDF](https://yy63724285-collab.github.io/project-files/sta130-catf.pdf)
+- `index.html`: content and accessible navigation.
+- `styles.css`: warm paper/charcoal layout and responsive motion.
+- `script.js`: smooth interruptible navigation, project tabs, theme and two-second introduction.
+- `atmosphere.js`: cream-fold canvas and native-scroll-driven horizontal stripe sequence.
+- `assets/`: portrait, photography and locally hosted Geist fonts (license included).
+- `Kerry_Yang_CV.pdf`: current CV.
+- `project-files/`: reports, presentations and code.
 
-[CV (PDF)](https://yy63724285-collab.github.io/Kerry_Yang_CV.pdf) · [LinkedIn](https://www.linkedin.com/in/kerry-yang-8a62a5260) · [Email](mailto:yy63724285@gmail.com)
+No build is required. GitHub Pages publishes the repository root from `main`; `.nojekyll` preserves the static assets. Existing section URLs redirect to the matching new section. Reduced-motion preferences and non-WebGL fallbacks are supported.
+
+## Local preview
+
+Serve this folder with `python3 -m http.server 8767`. Relative URLs work under the repository's GitHub Pages subpath.
+
+Replaces the earlier academic-site build. The earlier version remains recoverable through Git history.

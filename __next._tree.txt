@@ -1,2 +1,0 @@
-:HL["/Kerry-Yang-Academic-Website/_next/static/css/316bc1f96d6d899f.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"pHOnqGvIfUMZ3U0Mh5iFe"}
